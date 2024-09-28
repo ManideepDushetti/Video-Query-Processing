@@ -99,7 +99,7 @@ def execute_retrieval_query(inference_index, object_of_interest, confidence_thre
     return relevant_frames  # Return list of (frame number, confidence) tuples containing the object
 
 # Main function to process the video input
-def process_video(video_path, N, alpha):
+def process_video(video_path, N, alpha,queries,objects):
     # Step 1: Extract I-frames using ffprobe
     print("Extracting I-frames...")
     i_frame_images, iframe_numbers = extract_iframes(video_path,N)
@@ -119,33 +119,43 @@ def process_video(video_path, N, alpha):
     for key, value in inference_index.items():
         print(key, ": ", value, "\n")
     # Prompt the user to select query type and object of interest
-    query_type = input("Enter query type (aggregate/retrieval): ").lower().strip()
-    object_of_interest = input("Enter the object of interest (e.g., car, truck, person): ").strip().lower()
+    for i in range(len(queries)):
+      query_type = queries[i]
+      object_of_interest = objects[i]
 
-    if query_type == 'retrieval':
-        confidence_threshold = float(input("Enter confidence threshold (e.g., 0.5): "))
 
-    # Step 4: Run the selected query
-    if query_type == 'aggregate':
-        # Execute aggregate query (average count of objects)
-        avg_count = execute_aggregate_query(inference_index, object_of_interest)
-        print(f"Average {object_of_interest} count per frame: {avg_count}")
-    elif query_type == 'retrieval':
-        # Execute retrieval query (get frames with the object, filtered by confidence)
-        relevant_frames = execute_retrieval_query(inference_index, object_of_interest, confidence_threshold)
-        print(f"I-frames containing {object_of_interest} with confidence >= {confidence_threshold}: {relevant_frames}")
-    else:
-        print("Invalid query type. Please enter either 'aggregate' or 'retrieval'.")
+      if query_type == 'retrieval':
+          confidence_threshold = 0.6
+
+      # Step 4: Run the selected query
+      if query_type == 'aggregate':
+          # Execute aggregate query (average count of objects)
+          avg_count = execute_aggregate_query(inference_index, object_of_interest)
+          print(f"Average {object_of_interest} count per frame: {avg_count}")
+      elif query_type == 'retrieval':
+          # Execute retrieval query (get frames with the object, filtered by confidence)
+          relevant_frames = execute_retrieval_query(inference_index, object_of_interest, confidence_threshold)
+          print(f"I-frames containing {object_of_interest} with confidence >= {confidence_threshold}: {relevant_frames}")
+      else:
+          print("Invalid query type. Please enter either 'aggregate' or 'retrieval'.")
 
     # Clean up: Delete extracted I-frame images after processing
-    for frame in sampled_iframes:
-        os.remove(frame)
-    print("Cleaned up I-frame images.")
+    # Clean up: Delete all extracted I-frame images after processing
+    for frame in i_frame_images:
+        frame_path = os.path.join(os.getcwd(), frame)  # Ensure the path is correct
+        if os.path.exists(frame_path):  # Check if the file exists
+          os.remove(frame_path)
+
+
+    print("Cleanup process completed.")
+
 
 # Run the script
 if __name__ == "__main__":
-    video_path = "C:\\Users\\manid\\OneDrive\\Desktop"
+    video_path = "/content/drive/MyDrive/temp/TestVideo.mp4"
     N = 50
     alpha = 0.5
-    process_video(video_path, N, alpha)
+    queries=["aggregate","retrieval"]
+    objects=["car","bus"]
+    process_video(video_path, N, alpha,queries,objects)
 
