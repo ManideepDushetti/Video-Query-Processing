@@ -80,5 +80,3 @@ process_video(videos[0], N[0], alpha)
 ## References
 This project is inspired by the original work at [Georgia Tech DB](https://github.com/georgia-tech-db/seiden_submission).
 
-## License
-This project is released under the MIT License.
